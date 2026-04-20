@@ -35,6 +35,37 @@
 namespace raptor_dbw_can
 {
 
+namespace
+{
+double getSignalOrDefault(NewEagle::DbcMessage * message, const char * signal_name, double default_value)
+{
+  if (message == nullptr) {
+    return default_value;
+  }
+  NewEagle::DbcSignal * signal = message->GetSignal(signal_name);
+  if (signal == nullptr) {
+    return default_value;
+  }
+  return signal->GetResult();
+}
+
+bool getSignalBoolOrDefault(NewEagle::DbcMessage * message, const char * signal_name, bool default_value)
+{
+  return getSignalOrDefault(message, signal_name, default_value ? 1.0 : 0.0) != 0.0;
+}
+
+void setSignalIfPresent(NewEagle::DbcMessage * message, const char * signal_name, double value)
+{
+  if (message == nullptr) {
+    return;
+  }
+  NewEagle::DbcSignal * signal = message->GetSignal(signal_name);
+  if (signal != nullptr) {
+    signal->SetResult(value);
+  }
+}
+}  // namespace
+
 RaptorDbwCAN::RaptorDbwCAN(
   const rclcpp::NodeOptions & options,
   std::string dbw_dbc_file,
@@ -452,27 +483,24 @@ void RaptorDbwCAN::recvGearRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_GEAR_REPORT);
 
-  if (msg->dlc >= 1) {
+  if (message != nullptr && msg->dlc >= 1) {
     message->SetFrame(msg);
 
-    bool driverActivity =
-      message->GetSignal("DBW_PrndDriverActivity")->GetResult() ? true : false;
+    bool driverActivity = getSignalBoolOrDefault(message, "DBW_PrndDriverActivity", false);
 
     setOverride(OVR_GEAR, driverActivity, false);
     GearReport out;
     out.header.stamp = msg->header.stamp;
 
-    out.enabled = message->GetSignal("DBW_PrndCtrlEnabled")->GetResult() ? true : false;
-    out.state.gear = message->GetSignal("DBW_PrndStateActual")->GetResult();
+    out.enabled = getSignalBoolOrDefault(message, "DBW_PrndCtrlEnabled", false);
+    out.state.gear = getSignalOrDefault(message, "DBW_PrndStateActual", 0);
     out.driver_activity = driverActivity;
-    out.gear_select_system_fault =
-      message->GetSignal("DBW_PrndFault")->GetResult() ? true : false;
+    out.gear_select_system_fault = getSignalBoolOrDefault(message, "DBW_PrndFault", false);
 
-    out.reject = message->GetSignal("DBW_PrndStateReject")->GetResult() ? true : false;
+    out.reject = getSignalBoolOrDefault(message, "DBW_PrndStateReject", false);
 
-    out.trans_curr_gear = message->GetSignal("DBW_TransCurGear")->GetResult();
-    out.gear_mismatch_flash =
-      message->GetSignal("DBW_PrndMismatchFlash")->GetResult() ? true : false;
+    out.trans_curr_gear = getSignalOrDefault(message, "DBW_TransCurGear", 0);
+    out.gear_mismatch_flash = getSignalBoolOrDefault(message, "DBW_PrndMismatchFlash", false);
 
     if (out.gear_mismatch_flash) {
       std::string err_msg(
@@ -659,16 +687,11 @@ void RaptorDbwCAN::recvDriverInputRpt(const Frame::SharedPtr msg)
     out.adaptive_cruise_decrease_distance_button = message->GetSignal(
       "DBW_DrvInptAccDecDistBtn")->GetResult() ? true : false;
 
-    out.steer_wheel_button_a =
-      message->GetSignal("DBW_DrvInputStrWhlBtnA")->GetResult() ? true : false;
-    out.steer_wheel_button_b =
-      message->GetSignal("DBW_DrvInputStrWhlBtnB")->GetResult() ? true : false;
-    out.steer_wheel_button_c =
-      message->GetSignal("DBW_DrvInputStrWhlBtnC")->GetResult() ? true : false;
-    out.steer_wheel_button_d =
-      message->GetSignal("DBW_DrvInputStrWhlBtnD")->GetResult() ? true : false;
-    out.steer_wheel_button_e =
-      message->GetSignal("DBW_DrvInputStrWhlBtnE")->GetResult() ? true : false;
+    out.steer_wheel_button_a = getSignalBoolOrDefault(message, "DBW_DrvInputStrWhlBtnA", false);
+    out.steer_wheel_button_b = getSignalBoolOrDefault(message, "DBW_DrvInputStrWhlBtnB", false);
+    out.steer_wheel_button_c = getSignalBoolOrDefault(message, "DBW_DrvInputStrWhlBtnC", false);
+    out.steer_wheel_button_d = getSignalBoolOrDefault(message, "DBW_DrvInputStrWhlBtnD", false);
+    out.steer_wheel_button_e = getSignalBoolOrDefault(message, "DBW_DrvInputStrWhlBtnE", false);
 
     out.door_or_hood_ajar =
       message->GetSignal("DBW_OccupAnyDoorOrHoodAjar")->GetResult() ? true : false;
@@ -785,7 +808,7 @@ void RaptorDbwCAN::recvSteering2Rpt(const Frame::SharedPtr msg)
       message->GetSignal("DBW_SteerTrq_Motor")->GetResult();
 
     steering2Report.expect_torque_driver =
-      message->GetSignal("DBW_SteerTrq_DriverExpectedValue")->GetResult();
+      getSignalOrDefault(message, "DBW_SteerTrq_DriverExpectedValue", 0.0);
 
     pub_steering_2_report_->publish(steering2Report);
   }
@@ -814,14 +837,14 @@ void RaptorDbwCAN::recvFaultActionRpt(const Frame::SharedPtr msg)
       "DBW_FltAct_PreventEnterAutonMode")->GetResult();
     faultActionsReport.warn_driver_only =
       message->GetSignal("DBW_FltAct_WarnDriverOnly")->GetResult();
-    faultActionsReport.chime_fcw_beeps =
-      message->GetSignal("DBW_FltAct_Chime_FcwBeeps")->GetResult();
-    faultActionsReport.last_active_fault_idx =
-      message->GetSignal("DBW_IdxOfLastActiveFault")->GetResult();
-    faultActionsReport.estop_btn_pressed =
-      message->GetSignal("DBW_EmgrStopBtnPrssd")->GetResult();
-    faultActionsReport.remote_estop_btn_pressed.value =
-      message->GetSignal("DBW_RemoteEmgrStopBtnPrssd")->GetResult();
+    faultActionsReport.chime_fcw_beeps = getSignalBoolOrDefault(
+      message, "DBW_FltAct_Chime_FcwBeeps", false);
+    faultActionsReport.last_active_fault_idx = getSignalOrDefault(
+      message, "DBW_IdxOfLastActiveFault", 0);
+    faultActionsReport.estop_btn_pressed = getSignalBoolOrDefault(
+      message, "DBW_EmgrStopBtnPrssd", false);
+    faultActionsReport.remote_estop_btn_pressed.value = getSignalOrDefault(
+      message, "DBW_RemoteEmgrStopBtnPrssd", 0);
 
     pub_fault_actions_report_->publish(faultActionsReport);
   }
@@ -844,8 +867,7 @@ void RaptorDbwCAN::recvOtherActuatorsRpt(const Frame::SharedPtr msg)
 
     out.turn_signal_state.value = message->GetSignal(
       "DBW_TurnSignalState")->GetResult();
-    out.turn_signal_sync = message->GetSignal(
-      "DBW_TurnSignalSyncBit")->GetResult() ? true : false;
+    out.turn_signal_sync = getSignalBoolOrDefault(message, "DBW_TurnSignalSyncBit", false);
     out.high_beam_state.value = message->GetSignal(
       "DBW_HighBeamState")->GetResult();
     out.low_beam_state.status = message->GetSignal(
@@ -862,8 +884,7 @@ void RaptorDbwCAN::recvOtherActuatorsRpt(const Frame::SharedPtr msg)
       "DBW_LeftRearDoorState")->GetResult();
     out.liftgate_door_state.value = message->GetSignal(
       "DBW_LiftgateDoorState")->GetResult();
-    out.door_lock_state.value = message->GetSignal(
-      "DBW_DoorLockState")->GetResult();
+    out.door_lock_state.value = getSignalOrDefault(message, "DBW_DoorLockState", 0);
 
     pub_other_actuators_report_->publish(out);
   }
@@ -873,7 +894,7 @@ void RaptorDbwCAN::recvGpsReferenceRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_GPS_REFERENCE_REPORT);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     GpsReferenceReport out;
@@ -896,7 +917,7 @@ void RaptorDbwCAN::recvGpsRemainderRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_GPS_REMAINDER_REPORT);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     GpsRemainderReport out;
@@ -916,7 +937,7 @@ void RaptorDbwCAN::recvExitRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_EXIT_REPORT);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     ExitReport out;
@@ -952,7 +973,7 @@ void RaptorDbwCAN::recvBrakeCmd(const BrakeCmd::SharedPtr msg)
   message->GetSignal("AKit_BrakePcntTorqueReq")->SetResult(0);
   message->GetSignal("AKit_SpeedModeDecelLim")->SetResult(0);
   message->GetSignal("AKit_SpeedModeNegJerkLim")->SetResult(0);
-  message->GetSignal("AKit_ParkingBrkReq")->SetResult(0);
+  setSignalIfPresent(message, "AKit_ParkingBrkReq", 0);
 
   if (enabled()) {
     if (msg->control_type.value == ActuatorControlMode::OPEN_LOOP) {
@@ -977,7 +998,7 @@ void RaptorDbwCAN::recvBrakeCmd(const BrakeCmd::SharedPtr msg)
       (msg->control_type.value == ActuatorControlMode::CLOSED_LOOP_ACTUATOR) ||
       (msg->control_type.value == ActuatorControlMode::CLOSED_LOOP_VEHICLE))
     {
-      message->GetSignal("AKit_ParkingBrkReq")->SetResult(msg->park_brake_cmd.status);
+      setSignalIfPresent(message, "AKit_ParkingBrkReq", msg->park_brake_cmd.status);
     }
   }
 
@@ -1180,7 +1201,7 @@ void RaptorDbwCAN::recvMiscCmd(const MiscCmd::SharedPtr msg)
   message->GetSignal("AKit_OtherChecksum")->SetResult(0);
   message->GetSignal("AKit_HornReq")->SetResult(0);
   message->GetSignal("AKit_LowBeamReq")->SetResult(0);
-  message->GetSignal("AKit_DoorLockReq")->SetResult(0);
+  setSignalIfPresent(message, "AKit_DoorLockReq", 0);
 
   if (enabled()) {
     message->GetSignal("AKit_TurnSignalReq")->SetResult(msg->cmd.value);
@@ -1204,7 +1225,7 @@ void RaptorDbwCAN::recvMiscCmd(const MiscCmd::SharedPtr msg)
 
     message->GetSignal("AKit_HornReq")->SetResult(msg->horn_cmd);
     message->GetSignal("AKit_LowBeamReq")->SetResult(msg->low_beam_cmd.status);
-    message->GetSignal("AKit_DoorLockReq")->SetResult(msg->door_lock_cmd.value);
+    setSignalIfPresent(message, "AKit_DoorLockReq", msg->door_lock_cmd.value);
   }
 
   message->GetSignal("AKit_OtherRollingCntr")->SetResult(msg->rolling_counter);
@@ -1269,10 +1290,12 @@ void RaptorDbwCAN::timerCallback()
     }
 
     if (overrides_[OVR_GEAR]) {
-      NewEagle::DbcMessage * message = dbwDbc_.GetMessage("AKit_GearRequest");
-      message->GetSignal("AKit_PrndStateCmd")->SetResult(0);
-      message->GetSignal("AKit_PrndChecksum")->SetResult(0);
-      pub_can_->publish(message->GetFrame());
+      NewEagle::DbcMessage * message = dbwDbc_.GetMessage("AKit_PrndRequest");
+      if (message != nullptr) {
+        setSignalIfPresent(message, "AKit_PrndStateReq", 0);
+        setSignalIfPresent(message, "AKit_PrndChecksum", 0);
+        pub_can_->publish(message->GetFrame());
+      }
     }
   }
 }
