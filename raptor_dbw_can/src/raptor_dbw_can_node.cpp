@@ -41,7 +41,7 @@ int main(int argc, char ** argv)
   auto temp = std::make_shared<rclcpp::Node>("get_dbw_params_node", options);
   std::string n_dbw_dbc_file = temp->declare_parameter<std::string>("dbw_dbc_file", "");
   float n_max_steer_angle =
-    static_cast<float>(temp->declare_parameter<double>("max_steer_angle", 470.0));
+    static_cast<float>(temp->declare_parameter<double>("max_steer_angle", 520.0));
 
   // Create RaptorDbwCAN class
   auto node = std::make_shared<raptor_dbw_can::RaptorDbwCAN>(

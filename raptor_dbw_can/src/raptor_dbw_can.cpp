@@ -324,7 +324,7 @@ void RaptorDbwCAN::recvBrakeRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_BRAKE_REPORT);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     bool brakeSystemFault =
@@ -374,7 +374,7 @@ void RaptorDbwCAN::recvBrakeRpt(const Frame::SharedPtr msg)
 void RaptorDbwCAN::recvAccelPedalRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_ACCEL_PEDAL_REPORT);
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     bool faultCh1 = message->GetSignal("DBW_AccelPdlFault_Ch1")->GetResult() ? true : false;
@@ -427,7 +427,7 @@ void RaptorDbwCAN::recvAccelPedalRpt(const Frame::SharedPtr msg)
 void RaptorDbwCAN::recvSteeringRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_STEERING_REPORT);
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     bool steeringSystemFault =
@@ -518,7 +518,7 @@ void RaptorDbwCAN::recvWheelSpeedRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_REPORT_WHEEL_SPEED);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     WheelSpeedReport out;
@@ -537,7 +537,7 @@ void RaptorDbwCAN::recvWheelSpeedRpt(const Frame::SharedPtr msg)
 void RaptorDbwCAN::recvWheelPositionRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_REPORT_WHEEL_POSITION);
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     WheelPositionReport out;
@@ -556,7 +556,7 @@ void RaptorDbwCAN::recvTirePressureRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_REPORT_TIRE_PRESSURE);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     TirePressureReport out;
@@ -573,7 +573,7 @@ void RaptorDbwCAN::recvSurroundRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_REPORT_SURROUND);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     SurroundReport out;
@@ -603,7 +603,7 @@ void RaptorDbwCAN::recvVinRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_VIN);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     if (message->GetSignal("DBW_VinMultiplexor")->GetResult() == VIN_MUX_VIN0) {
@@ -636,7 +636,7 @@ void RaptorDbwCAN::recvImuRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_REPORT_IMU);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     Imu out;
@@ -659,7 +659,7 @@ void RaptorDbwCAN::recvDriverInputRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_REPORT_DRIVER_INPUT);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     DriverInputReport out;
@@ -709,7 +709,7 @@ void RaptorDbwCAN::recvMiscRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_MISC_REPORT);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     MiscReport out;
@@ -742,7 +742,7 @@ void RaptorDbwCAN::recvLowVoltageSystemRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_LOW_VOLTAGE_SYSTEM_REPORT);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     LowVoltageSystemReport lvSystemReport;
@@ -771,7 +771,7 @@ void RaptorDbwCAN::recvBrake2Rpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_BRAKE_2_REPORT);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     Brake2Report brake2Report;
@@ -792,7 +792,7 @@ void RaptorDbwCAN::recvSteering2Rpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_STEERING_2_REPORT);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     Steering2Report steering2Report;
@@ -818,7 +818,7 @@ void RaptorDbwCAN::recvFaultActionRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_FAULT_ACTION_REPORT);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     FaultActionsReport faultActionsReport;
@@ -854,7 +854,7 @@ void RaptorDbwCAN::recvOtherActuatorsRpt(const Frame::SharedPtr msg)
 {
   NewEagle::DbcMessage * message = dbwDbc_.GetMessageById(ID_OTHER_ACTUATORS_REPORT);
 
-  if (msg->dlc >= message->GetDlc()) {
+  if (message != nullptr && msg->dlc >= message->GetDlc()) {
     message->SetFrame(msg);
 
     OtherActuatorsReport out;
@@ -966,6 +966,7 @@ void RaptorDbwCAN::recvBrakeCmd(const BrakeCmd::SharedPtr msg)
 {
   // TODO(NERaptor): add checksum support
   NewEagle::DbcMessage * message = dbwDbc_.GetMessage("AKit_BrakeRequest");
+  if (message == nullptr) {return;}
 
   message->GetSignal("AKit_BrakePedalReq")->SetResult(0);
   message->GetSignal("AKit_BrakeCtrlEnblReq")->SetResult(0);
@@ -1015,6 +1016,7 @@ void RaptorDbwCAN::recvAcceleratorPedalCmd(
 {
   // TODO(NERaptor): add checksum support
   NewEagle::DbcMessage * message = dbwDbc_.GetMessage("AKit_AccelPdlRequest");
+  if (message == nullptr) {return;}
 
   message->GetSignal("AKit_AccelPdlReq")->SetResult(0);
   message->GetSignal("AKit_AccelPdlEnblReq")->SetResult(0);
@@ -1069,6 +1071,7 @@ void RaptorDbwCAN::recvSteeringCmd(const SteeringCmd::SharedPtr msg)
 {
   // TODO(NERaptor): add checksum support
   NewEagle::DbcMessage * message = dbwDbc_.GetMessage("AKit_SteeringRequest");
+  if (message == nullptr) {return;}
 
   message->GetSignal("AKit_SteeringWhlAngleReq")->SetResult(0);
   message->GetSignal("AKit_SteeringWhlAngleVelocityLim")->SetResult(0);
@@ -1132,6 +1135,7 @@ void RaptorDbwCAN::recvGearCmd(const GearCmd::SharedPtr msg)
 {
   // TODO(NERaptor): add checksum support
   NewEagle::DbcMessage * message = dbwDbc_.GetMessage("AKit_PrndRequest");
+  if (message == nullptr) {return;}
 
   message->GetSignal("AKit_PrndCtrlEnblReq")->SetResult(0);
   message->GetSignal("AKit_PrndStateReq")->SetResult(0);
@@ -1156,6 +1160,7 @@ void RaptorDbwCAN::recvGlobalEnableCmd(const GlobalEnableCmd::SharedPtr msg)
 {
   // TODO(NERaptor): add checksum support
   NewEagle::DbcMessage * message = dbwDbc_.GetMessage("AKit_GlobalEnbl");
+  if (message == nullptr) {return;}
 
   message->GetSignal("AKit_GlobalEnblRollingCntr")->SetResult(0);
   message->GetSignal("AKit_GlobalByWireEnblReq")->SetResult(0);
@@ -1186,6 +1191,7 @@ void RaptorDbwCAN::recvMiscCmd(const MiscCmd::SharedPtr msg)
 {
   // TODO(NERaptor): add checksum support
   NewEagle::DbcMessage * message = dbwDbc_.GetMessage("AKit_OtherActuators");
+  if (message == nullptr) {return;}
 
   message->GetSignal("AKit_TurnSignalReq")->SetResult(0);
   message->GetSignal("AKit_RightRearDoorReq")->SetResult(0);
@@ -1260,33 +1266,38 @@ void RaptorDbwCAN::timerCallback()
     if (overrides_[OVR_BRAKE]) {
       // Might have an issue with WatchdogCntr when these are set.
       NewEagle::DbcMessage * message = dbwDbc_.GetMessage("AKit_BrakeRequest");
-      message->GetSignal("AKit_BrakePedalReq")->SetResult(0);
-      message->GetSignal("AKit_BrakeCtrlEnblReq")->SetResult(0);
-      // message->GetSignal("AKit_BrakePedalCtrlMode")->SetResult(0);
-      pub_can_->publish(message->GetFrame());
+      if (message != nullptr) {
+        message->GetSignal("AKit_BrakePedalReq")->SetResult(0);
+        message->GetSignal("AKit_BrakeCtrlEnblReq")->SetResult(0);
+        // message->GetSignal("AKit_BrakePedalCtrlMode")->SetResult(0);
+        pub_can_->publish(message->GetFrame());
+      }
     }
 
     if (overrides_[OVR_ACCEL] && !ignores_[IGNORE_ACCEL]) {
       // Might have an issue with WatchdogCntr when these are set.
       NewEagle::DbcMessage * message = dbwDbc_.GetMessage("AKit_AccelPdlRequest");
-      message->GetSignal("AKit_AccelPdlReq")->SetResult(0);
-      message->GetSignal("AKit_AccelPdlEnblReq")->SetResult(0);
-      message->GetSignal("Akit_AccelPdlIgnoreDriverOvrd")->SetResult(0);
-      // message->GetSignal("AKit_AccelPdlCtrlMode")->SetResult(0);
-      pub_can_->publish(message->GetFrame());
+      if (message != nullptr) {
+        message->GetSignal("AKit_AccelPdlReq")->SetResult(0);
+        message->GetSignal("AKit_AccelPdlEnblReq")->SetResult(0);
+        message->GetSignal("Akit_AccelPdlIgnoreDriverOvrd")->SetResult(0);
+        // message->GetSignal("AKit_AccelPdlCtrlMode")->SetResult(0);
+        pub_can_->publish(message->GetFrame());
+      }
     }
 
     if (overrides_[OVR_STEER] && !ignores_[IGNORE_STEER]) {
       // Might have an issue with WatchdogCntr when these are set.
       NewEagle::DbcMessage * message = dbwDbc_.GetMessage("AKit_SteeringRequest");
-      message->GetSignal("AKit_SteeringWhlAngleReq")->SetResult(0);
-      message->GetSignal("AKit_SteeringWhlAngleVelocityLim")->SetResult(0);
-      message->GetSignal("AKit_SteeringWhlIgnoreDriverOvrd")->SetResult(0);
-      message->GetSignal("AKit_SteeringWhlPcntTrqReq")->SetResult(0);
-      // message->GetSignal("AKit_SteeringWhlCtrlMode")->SetResult(0);
-      // message->GetSignal("AKit_SteeringWhlCmdType")->SetResult(0);
-
-      pub_can_->publish(message->GetFrame());
+      if (message != nullptr) {
+        message->GetSignal("AKit_SteeringWhlAngleReq")->SetResult(0);
+        message->GetSignal("AKit_SteeringWhlAngleVelocityLim")->SetResult(0);
+        message->GetSignal("AKit_SteeringWhlIgnoreDriverOvrd")->SetResult(0);
+        message->GetSignal("AKit_SteeringWhlPcntTrqReq")->SetResult(0);
+        // message->GetSignal("AKit_SteeringWhlCtrlMode")->SetResult(0);
+        // message->GetSignal("AKit_SteeringWhlCmdType")->SetResult(0);
+        pub_can_->publish(message->GetFrame());
+      }
     }
 
     if (overrides_[OVR_GEAR]) {
