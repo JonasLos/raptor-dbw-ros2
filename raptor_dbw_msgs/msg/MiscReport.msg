@@ -2,7 +2,7 @@ std_msgs/Header header
 
 float32 fuel_level          # %
 bool drive_by_wire_enabled
-float32 vehicle_speed       # km/h
+float32 vehicle_speed       # m/s
 uint16 software_build_number
 bool general_actuator_fault
 bool by_wire_ready
